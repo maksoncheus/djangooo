@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>TaskMaster - Список задач</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f4; }
+        h1 { color: #333; }
+        .task-container { background: #fff; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .task { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .task:last-child { border-bottom: none; }
+        .task.completed { text-decoration: line-through; color: #aaa; }
+        .task-actions a { margin-left: 10px; text-decoration: none; padding: 5px 10px; border-radius: 3px; }
+        .action-complete { background-color: #28a745; color: white; }
+        .action-delete { background-color: #dc3545; color: white; }
+        form { margin-top: 20px; display: flex; }
+        form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 3px; }
+        form button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 3px; margin-left: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Список задач</h1>
+
+    <form action="{% url 'task_list' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Введите новую задачу..." required>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <div class="task-container">
+        {% for task in tasks %}
+            <div class="task {% if task.completed %}completed{% endif %}">
+                <span>{{ task.title }}</span>
+                <div class="task-actions">
+                    {% if not task.completed %}
+                        <a href="{% url 'complete_task' task.id %}" class="action-complete">✅ Выполнить</a>
+                    {% endif %}
+                    <a href="{% url 'delete_task' task.id %}" class="action-delete">❌ Удалить</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>Задач пока нет. Добавьте первую!</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=study
+      - POSTGRES_USER=userdb
+      - POSTGRES_PASSWORD=qwerty123
+
+  web:
+    image: maksoncheus/taskmaster:1.0
+    command: >
+      sh -c "
+      echo 'Waiting for postgres...' &&
+      while ! nc -z db 5432; do
+        sleep 0.1;
+      done;
+      echo 'PostgreSQL started';
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ../todo_project/:/app/ # Монтируем код для удобства отладки
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_DB=study
+      - POSTGRES_USER=userdb
+      - POSTGRES_PASSWORD=qwerty123
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

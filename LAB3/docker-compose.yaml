@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data_lab3:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=study
+      - POSTGRES_USER=userdb
+      - POSTGRES_PASSWORD=qwerty123
+    networks:
+      makarov:
+        ipv4_address: 10.20.6.5/24 # IP для базы данных
+
+  web:
+    image: maksoncheus/taskmaster:2.0 # УКАЖИТЕ СВОЙ ЛОГИН
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - type: bind
+        source: ./logs
+        target: /app/log_data
+      - type: volume
+        source: templates_volume
+        target: /app/tasks/templates
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_FILE_PATH=/app/log_data/access.log
+      - POSTGRES_DB=study
+      - POSTGRES_USER=userdb
+      - POSTGRES_PASSWORD=qwerty123
+      - POSTGRES_HOST=10.20.6.5
+    depends_on:
+      - db
+    networks:
+      makarov:
+        ipv4_address: 10.20.6.10/24 # IP для веб-сервера
+
+networks:
+  makarov:
+    driver: bridge
+    name: Makarov
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.6.0/24
+          gateway: 10.20.6.1
+
+volumes:
+  postgres_data_lab3:
+  templates_volume:
